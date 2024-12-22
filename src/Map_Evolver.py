@@ -22,6 +22,7 @@ class MapEvolver(object):
 
     def evaluate_fitness(self, map: RPGMAP):
         map_data = map.getmap()
+
         def connections(map_data):
             temp_map = deepcopy(map_data)
             for x in range(self.width):
@@ -46,9 +47,47 @@ class MapEvolver(object):
                         connections.append(dfs(x, y, temp_map[y][x]))
             return connections
         connections_num = connections(map_data)
-        connections_scores = [x * x for x in connections_num]
+        connections_scores = [x ** 1.4 for x in connections_num]
 
         score = sum(connections_scores)
+
+        penalties = 0
+        nearby_tiles = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        corner_tiles = [(1, 1), (-1, 1), (1, -1), (-1, -1)]
+
+        """
+        0: mountain
+        1: river
+        2: grass
+        3: rock
+        4: riverstone
+        desirce seperation:, mountain, rock, grass, river, riverstone
+        """
+        penalties_weight = [
+            [0, 4, 2, 1, 3],
+            [4, 0, 2, 3, 1],
+            [2, 2, 0, 1, 1],
+            [1, 3, 1, 0, 2],
+            [3, 1, 1, 2, 0],
+        ]
+        for x in range(self.width):
+            for y in range(self.height):
+                for dx, dy in nearby_tiles:
+                    if x + dx >= 0 and x + dx < self.width and y + dy >= 0 and y + dy < self.height:
+                        x1, y1 = x, y
+                        x2, y2 = x + dx, y + dy
+                        tile1 = int(map_data[y1][x1])
+                        tile2 = int(map_data[y2][x2])
+                        penalties -= 2 * penalties_weight[tile1][tile2]
+
+                for dx, dy in corner_tiles:
+                    if x + dx >= 0 and x + dx < self.width and y + dy >= 0 and y + dy < self.height:
+                        x1, y1 = x, y
+                        x2, y2 = x + dx, y + dy
+                        tile1 = int(map_data[y1][x1])
+                        tile2 = int(map_data[y2][x2])
+                        penalties -= penalties_weight[tile1][tile2]**3
+        score += penalties
         return score
 
 
@@ -79,7 +118,10 @@ class MapEvolver(object):
             self.fitness[i] = self.evaluate_fitness(self.population[i])
 
         for generation in tqdm(range(self.generations)):
-            mutation_rate = self.init_mutation_rate * (1 - generation / self.generations) # linearly decrease the mutation rate
+            # mutation_rate = self.init_mutation_rate * (1 - generation / self.generations) # linearly decrease the mutation rate
+            max_mutation_rate = self.init_mutation_rate
+            min_mutation_rate = self.init_mutation_rate / 10
+            mutation_rate = max_mutation_rate - (max_mutation_rate - min_mutation_rate) * generation / self.generations
 
             new_population = []
             for _ in range(self.population_size):
