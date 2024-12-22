@@ -29,13 +29,27 @@ class MapEvolver(object):
                 for y in range(self.height):
                     if temp_map[y][x] == '4': # riverstone is considered as river in this case(connection)
                         temp_map[y][x] = '1'
-            def dfs(x, y , tile):
-                if x < 0 or x >= self.width or y < 0 or y >= self.height:
-                    return 1
-                if temp_map[y][x] != tile:
-                    return 0
-                temp_map[y][x] = 'x'
-                reward = 1 + dfs(x + 1, y, tile) + dfs(x - 1, y, tile) + dfs(x, y + 1, tile) + dfs(x, y - 1, tile)
+            def bfs(x, y, tile):
+                stack = [(x, y)]
+                reward = 0
+
+                while stack:
+                    cx, cy = stack.pop()
+
+                    if cx < 0 or cx >= self.width or cy < 0 or cy >= self.height or temp_map[cy][cx] == 'x':
+                        continue
+                    if temp_map[cy][cx] != tile:
+                        continue
+
+                    temp_map[cy][cx] = 'x'  # Mark as visited
+                    reward += 1
+
+                    # Add neighbors to the stack
+                    stack.append((cx + 1, cy))
+                    stack.append((cx - 1, cy))
+                    stack.append((cx, cy + 1))
+                    stack.append((cx, cy - 1))
+
                 if tile == '1':
                     reward /= 2
                 return reward
@@ -44,10 +58,10 @@ class MapEvolver(object):
             for x in range(self.width):
                 for y in range(self.height):
                     if temp_map[y][x] != 'x':
-                        connections.append(dfs(x, y, temp_map[y][x]))
+                        connections.append(bfs(x, y, temp_map[y][x]))
             return connections
         connections_num = connections(map_data)
-        connections_scores = [x ** 1.4 for x in connections_num]
+        connections_scores = [x ** 1.5 for x in connections_num]
 
         score = sum(connections_scores)
 
@@ -78,7 +92,7 @@ class MapEvolver(object):
                         x2, y2 = x + dx, y + dy
                         tile1 = int(map_data[y1][x1])
                         tile2 = int(map_data[y2][x2])
-                        penalties -= 2 * penalties_weight[tile1][tile2]
+                        penalties -= 2 * penalties_weight[tile1][tile2]**3
 
                 for dx, dy in corner_tiles:
                     if x + dx >= 0 and x + dx < self.width and y + dy >= 0 and y + dy < self.height:
@@ -87,9 +101,19 @@ class MapEvolver(object):
                         tile1 = int(map_data[y1][x1])
                         tile2 = int(map_data[y2][x2])
                         penalties -= penalties_weight[tile1][tile2]**3
+
+                center_x = self.width // 2
+                center_y = self.height // 2
+                center_tile = int(map_data[center_y][center_x])
+                distance = ((x - center_x) ** 2 + (y - center_y) ** 2) ** 0.5
+
+                tile = int(map_data[y][x])
+                
+                if tile == center_tile and distance < min(self.width, self.height) / 10:
+                    score += 1000
+
         score += penalties
         return score
-
 
     def mutate(self, map: RPGMAP, mtuation_rate: float):
         """
