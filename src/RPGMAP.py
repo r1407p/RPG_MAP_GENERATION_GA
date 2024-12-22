@@ -1,11 +1,13 @@
 import pygame
 from src.utils import TILE_SIZE, IMAGES
-
+import random
 class RPGMAP(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.map = [[str(0) for x in range(width)] for y in range(height)]
+        tiles = list(IMAGES.keys())
+        
+        self.map = [[random.choice(tiles) for x in range(width)] for y in range(height)]
         self.objects = []
 
     def setmap(self, map):
@@ -35,16 +37,17 @@ if __name__ == "__main__":
     from src.utils import MAP_WIDTH, MAP_HEIGHT
 
     rpg_map = RPGMAP(MAP_WIDTH, MAP_HEIGHT)
-    default_map_path = 'data/default.map'
+    rpg_map.store_map_image('data/random.png')
+    # default_map_path = 'data/default.map'
 
-    with open(default_map_path, 'r') as f:
-        raw_map = f.readlines()
+    # with open(default_map_path, 'r') as f:
+    #     raw_map = f.readlines()
 
-    map_ = []
-    for line in raw_map:
-        map_.append([x for x in line.strip()])
+    # map_ = []
+    # for line in raw_map:
+    #     map_.append([x for x in line.strip()])
 
-    rpg_map.setmap(map_)
+    # rpg_map.setmap(map_)
     
-    print(rpg_map.generate_map_image())
-    rpg_map.store_map_image('data/default.png')
+    # print(rpg_map.generate_map_image())
+    # rpg_map.store_map_image('data/default.png')
