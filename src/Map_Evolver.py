@@ -22,6 +22,9 @@ class MapEvolver(object):
         pass
 
     def mutate(self, map: RPGMAP):
+        """
+        Randomly change some tiles in the map, and return the mutated map
+        """
         mutated_map = map.getmap().copy()
         for x in range(self.width):
             for y in range(self.height):
@@ -29,9 +32,17 @@ class MapEvolver(object):
                     mutated_map[y][x] = random.choice(list(IMAGES.keys()))
         return RPGMAP(self.width, self.height, mutated_map)
 
-    def crossover(self, map1, map2):
-        pass
-    
+    def crossover(self, map1: RPGMAP, map2: RPGMAP):
+        """
+        for each row in the map, randomly choose a column to break the map into two parts
+        """
+        
+        break_points = [random.randint(0, self.width) for _ in range(self.height)]
+        child_map = []
+        for y in range(self.height):
+            child_map.append(map1.getmap()[y][:break_points[y]] + map2.getmap()[y][break_points[y]:])
+        return RPGMAP(self.width, self.height, child_map)
+
     def evolve(self):
         pass
 

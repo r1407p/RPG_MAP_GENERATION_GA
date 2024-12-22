@@ -2,12 +2,13 @@ import pygame
 from src.utils import TILE_SIZE, IMAGES
 import random
 class RPGMAP(object):
-    def __init__(self, width, height):
+    def __init__(self, width, height, map=None):
         self.width = width
         self.height = height
         tiles = list(IMAGES.keys())
-        
-        self.map = [[random.choice(tiles) for x in range(width)] for y in range(height)]
+        self.map = map
+        if self.map is None:
+            self.map = [[random.choice(tiles) for x in range(width)] for y in range(height)]
         self.objects = []
 
     def setmap(self, map):
