@@ -123,7 +123,13 @@ class MapEvolver(object):
         for x in range(self.width):
             for y in range(self.height):
                 if random.random() < mtuation_rate:
-                    mutated_map[y][x] = random.choice(list(IMAGES.keys()))
+                    nearby_tiles = []
+                    for dx in [-1, 0, 1]:
+                        for dy in [-1, 0, 1]:
+                            if x + dx >= 0 and x + dx < self.width and y + dy >= 0 and y + dy < self.height:
+                                nearby_tiles.append((dx, dy))
+                    new_tile = random.choice(nearby_tiles)
+                    mutated_map[y][x] = map.getmap()[y + new_tile[1]][x + new_tile[0]]
         return RPGMAP(self.width, self.height, mutated_map)
 
     def crossover(self, map1: RPGMAP, map2: RPGMAP):
@@ -170,6 +176,9 @@ class MapEvolver(object):
             population = old_population[:int(self.population_size * self.elite_rate)] + new_population[:int(self.population_size * (1 - self.elite_rate))]
             self.population = [x[0] for x in population]
             self.fitness = [x[1] for x in population]
+            if generation % 50 == 0:
+                print(f"Generation {generation}, best fitness: {max(self.fitness)}")
+                self.get_best_map().store_map_image(f"output/map_{generation}.png")
 
         return self.get_best_map()
 
