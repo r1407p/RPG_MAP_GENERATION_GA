@@ -27,7 +27,12 @@ class MapEvolver(object):
         pass
 
     def selection(self):
-        pass
+        """
+        using tournament selection
+        """
+        samples_idx = random.sample(range(self.population_size), self.selection_size)
+        best_idx = max(samples_idx, key=lambda x: self.fitness[x])
+        return self.population[best_idx]
 
     def get_best_map(self):
         best_fitness_index = self.fitness.index(max(self.fitness))
