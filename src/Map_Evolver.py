@@ -6,12 +6,13 @@ import random
 class MapEvolver(object):
     def __init__(self, width, height, 
                  population_size, generations, 
-                 mutation_rate, selection_size):
+                 mutation_rate, selection_size
+                 elite_rate=0.4):
         self.width = width
         self.height = height
         self.population_size = population_size
         self.generations = generations
-        self.mutation_rate = mutation_rate
+        self.init_mutation_rate = mutation_rate
         self.selection_size = selection_size
         self.tiles = list(IMAGES.keys())
 
@@ -21,14 +22,14 @@ class MapEvolver(object):
     def evaluate_fitness(self):
         pass
 
-    def mutate(self, map: RPGMAP):
+    def mutate(self, map: RPGMAP, mtuation_rate: float):
         """
         Randomly change some tiles in the map, and return the mutated map
         """
         mutated_map = map.getmap().copy()
         for x in range(self.width):
             for y in range(self.height):
-                if random.random() < self.mutation_rate:
+                if random.random() < mtuation_rate:
                     mutated_map[y][x] = random.choice(list(IMAGES.keys()))
         return RPGMAP(self.width, self.height, mutated_map)
 
